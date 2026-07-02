@@ -1,4 +1,30 @@
 import { useState, useEffect, useRef } from 'react';
+import { products } from '../../../mocks/homeData';
+
+// Productos con precios iniciales
+const productosConPrecio = products.map(product => ({
+  ...product,
+  precioInicial: {
+    'Manguera Hidráulica SAE 100R2': 150000,
+    'Manguera Neumática Poliuretano 8mm': 45000,
+    'Bronce B2': 25000,
+    'Bronce B3': 28000,
+    'Bronce B21': 35000,
+    'Bronce B23': 40000,
+    'Bronce B24': 38000,
+    'Bronce B46': 32000,
+    'Bronce B60': 22000,
+    'Bronce B61': 29000,
+    'Bronce B62': 31000,
+    'Bronce B64': 18000,
+    'Bronce B66': 20000,
+    'Bronce B68': 33000,
+    'Bronce B69': 42000,
+    'Bronce B100': 26000,
+    'Bronce B101': 34000,
+    'Bronce B102': 37000,
+  }[product.name] || 0,
+}));
 
 export default function Contact() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -6,11 +32,14 @@ export default function Contact() {
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState({
     nombre: '',
+    cedula: '',
     empresa: '',
+    nit: '',
     email: '',
     telefono: '',
     mensaje: '',
     sector: '',
+    productosSeleccionados: [] as number[],
   });
 
   useEffect(() => {
@@ -28,7 +57,18 @@ export default function Contact() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const productId = parseInt((e.target as HTMLInputElement).value);
+      setFormData(prev => ({
+        ...prev,
+        productosSeleccionados: (e.target as HTMLInputElement).checked
+          ? [...prev.productosSeleccionados, productId]
+          : prev.productosSeleccionados.filter(id => id !== productId),
+      }));
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +84,7 @@ export default function Contact() {
       });
       if (response.ok) {
         setFormStatus('success');
-        setFormData({ nombre: '', empresa: '', email: '', telefono: '', mensaje: '', sector: '' });
+        setFormData({ nombre: '', cedula: '', empresa: '', nit: '', email: '', telefono: '', mensaje: '', sector: '', productosSeleccionados: [] });
       } else {
         setFormStatus('error');
       }
@@ -124,6 +164,21 @@ export default function Contact() {
                     />
                   </div>
                   <div>
+                    <label className="block text-industrial-black text-sm font-semibold mb-1.5">Número de Cédula *</label>
+                    <input
+                      type="text"
+                      name="cedula"
+                      value={formData.cedula}
+                      onChange={handleChange}
+                      required
+                      className="w-full border-b-2 border-gray-200 focus:border-industrial-yellow px-0 py-2.5 text-industrial-black text-sm outline-none transition-colors bg-transparent"
+                      placeholder="1234567890"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
                     <label className="block text-industrial-black text-sm font-semibold mb-1.5">Empresa</label>
                     <input
                       type="text"
@@ -132,6 +187,17 @@ export default function Contact() {
                       onChange={handleChange}
                       className="w-full border-b-2 border-gray-200 focus:border-industrial-yellow px-0 py-2.5 text-industrial-black text-sm outline-none transition-colors bg-transparent"
                       placeholder="Nombre de tu empresa"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-industrial-black text-sm font-semibold mb-1.5">NIT</label>
+                    <input
+                      type="text"
+                      name="nit"
+                      value={formData.nit}
+                      onChange={handleChange}
+                      className="w-full border-b-2 border-gray-200 focus:border-industrial-yellow px-0 py-2.5 text-industrial-black text-sm outline-none transition-colors bg-transparent"
+                      placeholder="0000000000"
                     />
                   </div>
                 </div>
@@ -178,6 +244,36 @@ export default function Contact() {
                     <option value="industria">Industria General</option>
                     <option value="otro">Otro</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-industrial-black text-sm font-semibold mb-3">Productos a Cotizar</label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    {productosConPrecio.map(product => (
+                      <div key={product.id} className="flex items-start gap-3 p-2 hover:bg-white rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          name="productosSeleccionados"
+                          value={product.id}
+                          checked={formData.productosSeleccionados.includes(product.id)}
+                          onChange={handleChange}
+                          className="w-4 h-4 mt-1 accent-industrial-yellow cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <p className="text-industrial-black text-sm font-semibold">{product.name}</p>
+                          <p className="text-gray-600 text-xs">{product.description}</p>
+                          <p className="text-industrial-yellow font-bold text-sm mt-1">
+                            Precio inicial: ${product.precioInicial?.toLocaleString('es-CO')} COP
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {formData.productosSeleccionados.length > 0 && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      {formData.productosSeleccionados.length} producto(s) seleccionado(s)
+                    </p>
+                  )}
                 </div>
 
                 <div>
