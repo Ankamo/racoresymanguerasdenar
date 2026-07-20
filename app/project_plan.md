@@ -24,10 +24,12 @@ Sitio web corporativo para "Racores y Mangueras de Nariño", empresa dedicada a 
 - [x] Optimización SEO básica
 
 ## 4. Data Model Design
-No database required for initial phase. All content is static/marketing.
+Supabase database connected. Product catalog migrated to product tables (product_categories, product_items).
+- 9 categories, 131 products with prices in COP, stock, images
+- Front-end (Products.tsx, Cotizacion.tsx) currently reads from src/mocks/homeData.ts — pending migration to Supabase queries
 
 ## 5. Backend / Third-party Integration Plan
-- Supabase: Not needed for Phase 1 (static marketing site)
+- Supabase: Connected. Database populated with full product catalog.
 - Shopify: Not connected - product catalog is static display
 - Stripe: Not needed
 - Forms: Use get_form_url for contact form submissions
